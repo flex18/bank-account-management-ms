@@ -1,6 +1,13 @@
 server:
   port: 8084
-
+spring:
+  application:
+    name: bank-account-management-ms
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_SERVER:http://localhost:${EUREKA_PORT:8761}/eureka}
+    register-with-eureka: true
 # config for mongodb
 mongo:
   db: ${MONGO_DB:bankAccountMDB}
