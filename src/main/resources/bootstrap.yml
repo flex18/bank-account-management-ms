@@ -3,6 +3,14 @@ server:
 spring:
   application:
     name: bank-account-management-ms
+  cloud:
+    config:
+      label: ${BRANCH_GIT:master}
+      name: bank-account-management-ms
+      discovery:
+        service-id: config_server
+        enabled: true
+      fail-fast: true
 eureka:
   client:
     serviceUrl:
