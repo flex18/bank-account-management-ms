@@ -8,6 +8,9 @@ eureka:
     serviceUrl:
       defaultZone: ${EUREKA_SERVER:http://localhost:${EUREKA_PORT:8761}/eureka}
     register-with-eureka: true
+  instance:
+    prefer-ip-address: true
+
 # config for mongodb
 mongo:
   db: ${MONGO_DB:bankAccountMDB}
