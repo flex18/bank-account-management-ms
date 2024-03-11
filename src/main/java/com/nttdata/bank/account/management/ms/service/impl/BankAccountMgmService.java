@@ -5,6 +5,7 @@ import com.nttdata.bank.account.management.ms.repository.BankAccountRepository;
 import com.nttdata.bank.account.management.ms.service.inter.BankAccountMgmInterface;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -29,7 +30,10 @@ public class BankAccountMgmService implements BankAccountMgmInterface {
 
   @Override
   public Mono<BankAccount> getById(String id) {
-    return bankAccountRepository.findById(id);
+    Optional<BankAccount> optionalBankAccount = Optional
+        .ofNullable(bankAccountRepository.findById(id).block());
+    return optionalBankAccount.map(Mono::just).orElseGet(Mono::empty);
+
   }
 
   @Override
