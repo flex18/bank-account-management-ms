@@ -4,6 +4,7 @@ import com.nttdata.bank.account.management.ms.entity.BankAccount;
 import com.nttdata.bank.account.management.ms.service.impl.BankAccountMgmService;
 import java.math.BigDecimal;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,6 +22,9 @@ import reactor.core.publisher.Mono;
 public class BankAccountMgmController {
 
   @Autowired
+  CircuitBreakerFactory circuitBreakerFactory;
+
+  @Autowired
   BankAccountMgmService bankAccountMgmService;
 
   @GetMapping
@@ -30,7 +34,8 @@ public class BankAccountMgmController {
 
   @GetMapping("/{id}")
   public Mono<BankAccount> getBankAccountById(@PathVariable String id) {
-    return bankAccountMgmService.getById(id);
+    return circuitBreakerFactory.create("clientBankAccount")
+        .run(()-> bankAccountMgmService.getById(id), e -> alternativeMethod(id));
   }
 
   @PostMapping
@@ -62,5 +67,14 @@ public class BankAccountMgmController {
   @PostMapping("/transfers")
   public Mono<Void> transfers(@RequestParam String originAccountId, @RequestParam String destinationAccountId, @RequestParam BigDecimal amount) {
     return bankAccountMgmService.transfers(originAccountId, destinationAccountId, amount);
+  }
+
+  public Mono<BankAccount> alternativeMethod(String id){
+    BankAccount bankAccount = new BankAccount();
+    bankAccount.setAccountId(id);
+    bankAccount.setAccountType("unanswered");
+    bankAccount.setCustomerId("unanswered");
+    bankAccount.setAmount(null);
+    return Mono.just(bankAccount);
   }
 }
