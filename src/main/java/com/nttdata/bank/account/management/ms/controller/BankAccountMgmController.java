@@ -3,6 +3,7 @@ package com.nttdata.bank.account.management.ms.controller;
 import com.nttdata.bank.account.management.ms.entity.BankAccount;
 import com.nttdata.bank.account.management.ms.service.impl.BankAccountMgmService;
 import java.math.BigDecimal;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+@Slf4j
 @RestController
 @RequestMapping("/bank-account")
 public class BankAccountMgmController {
@@ -35,7 +37,7 @@ public class BankAccountMgmController {
   @GetMapping("/{id}")
   public Mono<BankAccount> getBankAccountById(@PathVariable String id) {
     return circuitBreakerFactory.create("clientBankAccount")
-        .run(()-> bankAccountMgmService.getById(id), e -> alternativeMethod(id));
+        .run(()-> bankAccountMgmService.getById(id), e -> alternativeMethod(id, e));
   }
 
   @PostMapping
@@ -69,7 +71,8 @@ public class BankAccountMgmController {
     return bankAccountMgmService.transfers(originAccountId, destinationAccountId, amount);
   }
 
-  public Mono<BankAccount> alternativeMethod(String id){
+  public Mono<BankAccount> alternativeMethod(String id, Throwable e){
+    log.debug("*** error message -> {}", e.getMessage());
     BankAccount bankAccount = new BankAccount();
     bankAccount.setAccountId(id);
     bankAccount.setAccountType("unanswered");
