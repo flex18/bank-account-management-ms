@@ -18,6 +18,11 @@ eureka:
     register-with-eureka: true
   instance:
     prefer-ip-address: true
+kafka:
+  urlKafkaServer: ${URL_KAFKA:localhost:9092}
+  topicYanki: ${TOPIC_YANKI:yanki}
+  groupIdConfigKafka: ${GROUP_ID_KAFKA:groupyanki}
+  offsetReset: ${OFFSET_KAFKA:latest}
 
 # config for mongodb
 mongo:

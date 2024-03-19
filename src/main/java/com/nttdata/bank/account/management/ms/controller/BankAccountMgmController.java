@@ -80,4 +80,9 @@ public class BankAccountMgmController {
     bankAccount.setAmount(null);
     return Mono.just(bankAccount);
   }
+
+  @GetMapping("phone-number/{cellPhoneNumber}")
+  public Mono<BankAccount> getBankAccountByCellPhone(@PathVariable String cellPhoneNumber) {
+    return bankAccountMgmService.findByPhoneNumber(cellPhoneNumber);
+  }
 }

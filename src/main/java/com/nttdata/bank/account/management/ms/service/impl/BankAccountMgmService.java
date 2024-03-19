@@ -1,25 +1,32 @@
 package com.nttdata.bank.account.management.ms.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nttdata.bank.account.management.ms.entity.BankAccount;
+import com.nttdata.bank.account.management.ms.entity.yanki.PaymentData;
+import com.nttdata.bank.account.management.ms.entity.yanki.PaymentMadeEvent;
 import com.nttdata.bank.account.management.ms.repository.BankAccountRepository;
 import com.nttdata.bank.account.management.ms.service.inter.BankAccountMgmInterface;
+import com.nttdata.bank.account.management.ms.service.inter.ProcessingMessage;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+@Slf4j
 @Service
-public class BankAccountMgmService implements BankAccountMgmInterface {
+public class BankAccountMgmService implements BankAccountMgmInterface, ProcessingMessage {
 
   @Autowired
   BankAccountRepository bankAccountRepository;
 
+  ObjectMapper json = new ObjectMapper();
+
   @Override
   public Mono<BankAccount> create(BankAccount request) {
-
     return bankAccountRepository.save(request);
   }
 
@@ -85,5 +92,30 @@ public class BankAccountMgmService implements BankAccountMgmInterface {
               }
             })
         );
+  }
+
+  @Override
+  public Mono<BankAccount> processing(PaymentMadeEvent request) {
+    try{
+      PaymentData data = new PaymentData(request);
+      String cellPhoneNumber = data.getCellPhoneNumber();
+      BigDecimal amount = data.getAmount();
+      log.info("*** The data received from kafka is: {}", json.writeValueAsString(data));
+      log.info("*** cellPhoneNumber: " + cellPhoneNumber + " and Amount: " + amount);
+      return bankAccountRepository.findByCellPhoneNumber(cellPhoneNumber)
+          .flatMap( x ->{
+            x.setAmount(x.getAmount().add(amount));
+            return bankAccountRepository.save(x);
+          });
+  } catch (Exception e) {
+    log.error("*** Error receiving and converting message from kafka. Cause: {}, Message: {}",
+        e.getCause(), e.getMessage());
+  }
+
+    return null;
+  }
+
+  public Mono<BankAccount> findByPhoneNumber(String cellPhoneNumber){
+   return bankAccountRepository.findByCellPhoneNumber(cellPhoneNumber);
   }
 }
