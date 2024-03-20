@@ -24,9 +24,9 @@ public class ConsumerService implements ConsumerInterface {
   @Override
   @KafkaListener(id = "${kafka.groupIdConfigKafka}", topics = "${kafka.topicYanki}",
       autoStartup = "true")
-  public void listenEvents(String message) throws JsonProcessingException {
+  public Void listenEvents(String message) throws JsonProcessingException {
     log.info("*** The message received from kafka is: " + message);
       PaymentMadeEvent paymentMade = json.readValue(message, PaymentMadeEvent.class);
-       processingMessage.processing(paymentMade);
+       return processingMessage.processing(paymentMade);
   }
 }

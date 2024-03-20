@@ -95,27 +95,22 @@ public class BankAccountMgmService implements BankAccountMgmInterface, Processin
   }
 
   @Override
-  public Mono<BankAccount> processing(PaymentMadeEvent request) {
-    try{
+  public Void processing(PaymentMadeEvent request) {
       PaymentData data = new PaymentData(request);
-      String cellPhoneNumber = data.getCellPhoneNumber();
-      BigDecimal amount = data.getAmount();
-      log.info("*** The data received from kafka is: {}", json.writeValueAsString(data));
-      log.info("*** cellPhoneNumber: " + cellPhoneNumber + " and Amount: " + amount);
-      return bankAccountRepository.findByCellPhoneNumber(cellPhoneNumber)
-          .flatMap( x ->{
-            x.setAmount(x.getAmount().add(amount));
-            return bankAccountRepository.save(x);
-          });
-  } catch (Exception e) {
-    log.error("*** Error receiving and converting message from kafka. Cause: {}, Message: {}",
-        e.getCause(), e.getMessage());
-  }
-
-    return null;
+      return insertPayment(data.getCellPhoneNumber(), data.getAmount()).then().block();
   }
 
   public Mono<BankAccount> findByPhoneNumber(String cellPhoneNumber){
    return bankAccountRepository.findByCellPhoneNumber(cellPhoneNumber);
   }
+
+  private  Mono<BankAccount> insertPayment(String cellPhoneNumber, BigDecimal amount){
+    return bankAccountRepository.findByCellPhoneNumber(cellPhoneNumber)
+        .flatMap( x -> {
+          x.setAmount(x.getAmount().add(amount));
+          log.info("*** Amount : " + x.getAmount());
+          return bankAccountRepository.save(x);
+        });
+  }
+
 }

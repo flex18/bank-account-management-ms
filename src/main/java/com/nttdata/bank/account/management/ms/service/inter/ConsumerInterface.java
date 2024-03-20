@@ -5,5 +5,5 @@ import reactor.core.publisher.Mono;
 
 public interface ConsumerInterface {
 
-  void listenEvents(String message) throws JsonProcessingException;
+  Void listenEvents(String message) throws JsonProcessingException;
 }
