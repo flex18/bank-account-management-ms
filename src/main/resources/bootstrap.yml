@@ -22,7 +22,7 @@ kafka:
   urlKafkaServer: ${URL_KAFKA:localhost:9092}
   topicYanki: ${TOPIC_YANKI:yanki}
   groupIdConfigKafka: ${GROUP_ID_KAFKA:groupyanki}
-  offsetReset: ${OFFSET_KAFKA:latest}
+  offsetReset: ${OFFSET_KAFKA:earliest}
 
 # config for mongodb
 mongo:
